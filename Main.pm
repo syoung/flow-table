@@ -109,11 +109,7 @@ method setDbh ( $args ) {
   $self->logNote("ARGS dbuser", $dbuser);
 
   #### DEBUG
-<<<<<<< HEAD
   $self->logDebug( "dbfile",  $dbfile);
-=======
-  $self->logDebug("dbfile: $dbfile");
->>>>>>> 712fbdc7f19350ff5e35ff84630966ca38fae6a4
   $dbfile   = $self->conf()->getKey("core:INSTALLDIR") . "/" . $self->conf()->getKey("database:DBFILE") if not defined $dbfile;
   $self->logDebug("dbfile", $dbfile);
 
