@@ -29,7 +29,7 @@ ORDER BY ordinal, paramnumber};
 
 	my $parameters = $self->db()->queryhasharray($query);
 	$parameters = [] if not defined $parameters;
-	#$self->logDebug("parameters", $parameters);
+	$self->logDebug("parameters", $parameters);
 
 	return $parameters;
 }
