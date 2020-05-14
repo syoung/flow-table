@@ -103,7 +103,7 @@ method _addStageParameter ( $data ) {
 
 	#### SET TABLE AND REQUIRED FIELDS	
 	my $table = "stageparameter";
-	my $required_fields = ["username", "projectname", "workflowname", "appname", "appnumber", "paramname", "paramnumber"];
+	my $required_fields = ["username", "projectname", "workflowname", "appname", "appnumber", "paramnumber"];
 	my $fields = $self->db()->fields ( $table );
 
 	#### DEFAULT PARAMTYPE IS 'input'
@@ -123,7 +123,7 @@ method _deleteStageParameter ( $data ) {
 	
 	#### SET TABLE AND REQUIRED FIELDS	
 	my $table = "stageparameter";
-	my $required_fields = ["username", "projectname", "workflowname", "appname", "appnumber", "paramname", "paramnumber"];
+	my $required_fields = ["username", "projectname", "workflowname", "appname", "appnumber", "paramnumber" ];
 
 	#### CHECK REQUIRED FIELDS ARE DEFINED
 	my $not_defined = $self->db()->notDefined($data, $required_fields);
