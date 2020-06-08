@@ -115,7 +115,7 @@ $where};
 	my $stages = $self->db()->queryhasharray($query);
 	$stages = [] if not defined $stages;
 	#$self->logDebug("$$ stages", $stages);
-	$self->logDebug("# stages", scalar(@$stages));
+	$self->logDebug("Total stages", scalar(@$stages));
 	
 	return $stages;
 }
