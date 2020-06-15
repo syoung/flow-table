@@ -41,7 +41,7 @@ use Term::ReadKey;
 #### INTERNAL
 use FindBin qw($Bin);
 use lib "$Bin/../../";
-use DBase::Factory;
+use Table::DBase::Factory;
 
 
 has 'database'    => ( isa => 'Str|Undef', is => 'rw' );
