@@ -414,9 +414,9 @@ method _addStage ( $data ) {
     $self->logDebug("undefined values: @$not_defined") and return 0 if @$not_defined;
 	
 	#### DO ADD
- 	$self->logNote("$$ Doing _addToTable(table, data, required_fields)");
+ 	$self->logNote("Doing _addToTable(table, data, required_fields)");
 	my $success = $self->_addToTable($table, $data, $required_fields, $inserted_fields);	
- 	$self->logNote("$$ _addToTable(stagedata) success", $success);
+ 	$self->logNote("_addToTable(stagedata) success", $success);
 	
 #	#### ADD IT TO THE report TABLE IF ITS A REPORT
 # 	$self->logNote("$$ data->{type}", $data->{type});

@@ -23,6 +23,7 @@ use POSIX;
 use Data::Dumper;
 use DBI;
 use DBD::SQLite;
+use TryCatch;
 
 has 'dbtype'      => ( isa => 'Str|Undef', is => 'ro', default => 'sqlite' );
 has 'dbh'            => ( isa => 'Any', is => 'rw', default => '' );
@@ -548,10 +549,16 @@ method do ($query) {
 =cut
   $self->logDebug("query", $query);
 
+  # try {
     no warnings;
-  return 1 if $self->dbh()->do($query);
+    return 1 if $self->dbh()->do($query);
     use warnings;
-    return 0;
+    return 0;    
+  # }
+  # catch {
+  #   $self->logDebug( "FAILED query with error", $@ );
+  #   return 0;
+  # }
 }
 
 method importFile ( $table, $file ) {

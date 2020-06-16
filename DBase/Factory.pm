@@ -13,7 +13,7 @@ sub new {
     my $class          = shift;
     my $requested_type = shift;
     
-    my $location    = "DBase/$requested_type.pm";
+    my $location    = "Table/DBase/$requested_type.pm";
     $class          = "Table::DBase::$requested_type";
     require $location;
 

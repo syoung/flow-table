@@ -78,13 +78,13 @@ method setUtil () {
 
 method BUILD ($args) {
   $self->logCaller("");
-  $self->logDebug("self->log()", $self->log());
+  # $self->logDebug("self->log()", $self->log());
 
   $self->initialise($args);
 }
 
 method initialise ($args) {
-  $self->logNote("args", $args);
+  # $self->logNote("args", $args);
   $self->setDbh($args);
 }
 
@@ -153,7 +153,7 @@ method setDbh ( $args ) {
   $self->logNote("FINAL dbpassword", $dbpassword);
 
   ##### CREATE DB OBJECT USING DBASE FACTORY
-  my $db =  DBase::Factory->new(
+  my $db =  Table::DBase::Factory->new(
     $dbtype,
     {
       dbfile      =>  $dbfile,
@@ -312,7 +312,7 @@ method _addToTable ( $table, $hash, $required_fields, $inserted_fields ) {
   my $values_csv = $self->db()->fieldsToCsv($inserted_fields, $hash);
   my $query = qq{INSERT INTO $table ($fields_csv)
 VALUES ($values_csv)};           
-  $self->logNote("$query");
+  $self->logNote("query", $query);
   my $result = $self->db()->do($query);
   $self->logNote("result", $result);
   
