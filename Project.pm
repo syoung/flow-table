@@ -318,13 +318,24 @@ method projectIsRunning ($username, $projectname) {
   $self->logDebug("username", $username);
   $self->logDebug("projectname", $projectname);
 
-  my $query = qq{SELECT 1 from projectname
+  my $query = qq{SELECT 1 from project
 WHERE username='$username'
 AND projectname='$projectname'
 AND status='running'
 };
   $self->logDebug("query", $query);
   my $result =  $self->db()->query($query) || 0;
+  $self->logDebug("Returning result", $result);
+  
+  return $result
+}
+
+method getRunningProjects () {  
+  my $query = qq{SELECT * from project
+WHERE status='running'
+};
+  $self->logNote("query", $query);
+  my $result =  $self->db()->queryhasharray( $query );
   $self->logDebug("Returning result", $result);
   
   return $result

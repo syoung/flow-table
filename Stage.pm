@@ -47,7 +47,7 @@ method updateStage {
 	$json->{appnumber} = $json->{newnumber};
 
 	#### DO REMOVE STAGE WITH OLD NUMBER
-	my $success = $self->_deleteStage($json);
+	my $success = $self->_removeStage($json);
 	$self->logStatus("Successfully removed stage $json->{name} from stage table") if $success;
 	$self->logError("Could not remove stage $json->{name} from stage table") if not $success;
 	
@@ -153,7 +153,7 @@ method addStage {
   $self->logError("User session not validated") and exit unless $self->validate();
 
   my $json 			=	$self->json();
-	my $success = $self->_deleteStage($json);
+	my $success = $self->_removeStage($json);
 	$success = $self->_addStage($json);
 	$self->logStatus("Added stage $json->{name} to workflow $json->{workflow}") if $success;
 }
@@ -241,7 +241,7 @@ $where};
 	#### JUST ADD THE STAGE AND ITS PARAMETERS TO stage AND stageparameters
 	#### IF THERE ARE NO EXISTING STAGES FOR THIS WORKFLOW
 	if ( not defined $stages or scalar(@$stages) == 0 ) {
-		$self->_deleteStage($data);
+		$self->_removeStage($data);
 		my $success = $self->_addStage($data);
 		$self->notifyError($data, "Could not insert stage $data->{appname} into workflow $data->{workflow}") and return if not $success;
 		
@@ -431,10 +431,10 @@ method _addStage ( $data ) {
 	return $success;
 }
 
-method deleteStage ( $data ) {
+method removeStage ( $data ) {
 =head2
 
-	SUBROUTINE		deleteStage
+	SUBROUTINE		removeStage
 	
 	PURPOSE
 
@@ -454,19 +454,19 @@ $where};
 	my $stages = $self->db()->queryhasharray($query);
 	my $workflow = $data->{workflow} || "undef";
 	if ( not defined $stages or scalar(@$stages) == 0 ) {
-	 	$self->notifyError($data, "{ error: 'Table::Stage::deleteStage    No stages in workflow '$workflow'") and return;
+	 	$self->notifyError($data, "{ error: 'Table::Stage::removeStage    No stages in workflow '$workflow'") and return;
 	}
 	
 	#### REMOVE STAGE FROM stage TABLE
-	my $success = $self->_deleteStage($data);
+	my $success = $self->_removeStage($data);
 	my $appname = $data->{appname} || "undef";
- 	$self->notifyError($data, "{ error: 'Table::Stage::deleteStage    Could not delete stage (appname: $appname) from stage table") and return if not defined $success;
+ 	$self->notifyError($data, "{ error: 'Table::Stage::removeStage    Could not remove stage (appname: $appname) from stage table") and return if not defined $success;
 	
 	#### REMOVE STAGE FROM stageparameter TABLE
 	my $table2 = "stageparameter";
 	my $required_fields2 = ["username", "projectname", "workflowname", "appname", "appnumber"];
 	$success = $self->_removeFromTable($table2, $data, $required_fields2);
- 	$self->notifyError($data, "{ error: 'Table::Stage::deleteStage    Could not remove stage $data->{name} from $table2 table") and return if not defined $success;
+ 	$self->notifyError($data, "{ error: 'Table::Stage::removeStage    Could not remove stage $data->{name} from $table2 table") and return if not defined $success;
 
 	#### QUIT IF THIS WAS THE LAST STAGE IN THE WORKFLOW
 	my $number = $data->{number};
@@ -521,8 +521,8 @@ $where};
  	$self->notifyStatus($data, "Removed stage $data->{name} from workflow $data->{workflow}");
 }
 
-method _deleteStage ( $data ) {
- 	$self->logDebug("data", $data);
+method _removeStage ( $data ) {
+ 	$self->logNote("data", $data);
 	
 	#### CHECK UNIQUE FIELDS ARE DEFINED
 	#### NB: ALSO CHECK name THOUGH NOT NECCESSARY FOR UNIQUE ID

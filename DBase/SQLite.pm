@@ -549,16 +549,16 @@ method do ($query) {
 =cut
   $self->logDebug("query", $query);
 
-  # try {
+  try {
     no warnings;
     return 1 if $self->dbh()->do($query);
     use warnings;
     return 0;    
-  # }
-  # catch {
-  #   $self->logDebug( "FAILED query with error", $@ );
-  #   return 0;
-  # }
+  }
+  catch {
+    $self->logDebug( "FAILED query with error", $@ );
+    return 0;
+  }
 }
 
 method importFile ( $table, $file ) {

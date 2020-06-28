@@ -17,6 +17,7 @@ sub new {
     $class          = "Table::DBase::$requested_type";
     require $location;
 
+    # print "Table::DBase::Factory    RETURNING class->new( @_ )\n";
     return $class->new(@_);
 }
     

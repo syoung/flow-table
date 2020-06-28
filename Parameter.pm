@@ -118,7 +118,7 @@ method _addStageParameter ( $data ) {
 	return $self->_addToTable( $table, $data, $required_fields, $fields );	
 }
 
-method _deleteStageParameter ( $data ) {
+method _removeStageParameter ( $data ) {
  	$self->logDebug("data", $data);	
 	
 	#### SET TABLE AND REQUIRED FIELDS	

@@ -32,7 +32,9 @@ class Table::Main with (Util::Logger,
   Table::Project,
   Table::Sample,
   Table::Stage,
-  Table::Workflow) {
+  Table::Workflow,
+  Table::Job,
+  Table::InstanceStatus) {
 
 #### EXTERNAL
 use Data::Dumper;
@@ -91,7 +93,8 @@ method initialise ($args) {
 method setDbh ( $args ) {
   $self->logCaller("");
   # $self->logNote("args", $args);  
-  
+  $self->logDebug( "self->log()", $self->log() );
+
   my $database    = $args->{database} || $self->database();
   my $dbuser      = $args->{dbuser};
   my $dbpassword  = $args->{dbpassword};
@@ -109,7 +112,6 @@ method setDbh ( $args ) {
   $self->logNote("ARGS dbuser", $dbuser);
 
   #### DEBUG
-  $self->logDebug( "dbfile",  $dbfile);
   $dbfile   = $self->conf()->getKey("core:INSTALLDIR") . "/" . $self->conf()->getKey("database:DBFILE") if not defined $dbfile;
   $self->logDebug("dbfile", $dbfile);
 
