@@ -1,31 +1,31 @@
-package Table::InstanceStatus;
+package Table::Instance;
 use Moose::Role;
 use Method::Signatures::Simple;
 
 =head2
 
-	PACKAGE		Table::InstanceStatus
+	PACKAGE		Table::Instance
 	
 	PURPOSE
 	
-		instancestatus TABLE METHODS
+		instance TABLE METHODS
 		
 =cut
 
-method addInstanceStatus ( $data ) {
+method addInstance ( $data ) {
 =head2
 
-	GET ALL ENTRIES FROM instancestatus TABLE
+	GET ALL ENTRIES FROM instance TABLE
 
 =cut
-	my $success = $self->_removeInstanceStatus( $data);
+	my $success = $self->_removeInstance( $data);
 	$self->logDebug( "REMOVE success", $success );
 
-	$success = $self->_addInstanceStatus( $data );
+	$success = $self->_addInstance( $data );
 	$self->logDebug( "ADD success", $success );
 
 	if ( not defined $success ) {
-		$self->logCritical( "FAILED TO ADD TO instancestatus TABLE", $data );
+		$self->logCritical( "FAILED TO ADD TO instance TABLE", $data );
 		return 0;
 	}
 
@@ -33,49 +33,49 @@ method addInstanceStatus ( $data ) {
 }
 
 
-method getInstanceStatus ( $data ) {
+method getInstance ( $data ) {
 =head2
 
-	GET ALL ENTRIES FROM instancestatus TABLE
+	GET ALL ENTRIES FROM instance TABLE
 
 =cut
 
-	my $query = qq{SELECT * FROM instancestatus
+	my $query = qq{SELECT * FROM instance
 WHERE username='$data->{ username }'
 AND projectname='$data->{ projectname }'
 AND workflowname='$data->{ workflowname }'
 };
 	$self->logDebug("query", $query);
-	my $instancestatus = $self->db()->queryhasharray($query);
-	$self->logDebug( "instancestatus", $instancestatus );
+	my $instance = $self->db()->queryhasharray($query);
+	$self->logDebug( "instance", $instance );
 
-	return $instancestatus;
+	return $instance;
 }
 
-method getInstanceStatusByWorkflow ( $data ) {
+method getInstanceByWorkflow ( $data ) {
 	$self->logNote("$$ data", $data);
 
 	my $required = [ "username", "projectname", "workflowname" ];
 	my $where = $self->db()->where( $data, $required );
-	my $query = qq{SELECT * FROM instancestatus
+	my $query = qq{SELECT * FROM instance
 $where
 ORDER BY projectname, workflownumber};
 	$self->logNote("$$ $query");
 
-	my $instancestatuss = $self->db()->queryhasharray($query);
-	$instancestatuss = [] if not defined $instancestatuss;
-	#$self->logDebug("$$ instancestatuss", $instancestatuss);
-	$self->logDebug("Total instancestatuss", scalar(@$instancestatuss));
+	my $instances = $self->db()->queryhasharray($query);
+	$instances = [] if not defined $instances;
+	#$self->logDebug("$$ instances", $instances);
+	$self->logDebug("Total instances", scalar(@$instances));
 	
-	return $instancestatuss;
+	return $instances;
 }
 
-#### ADD A PARAMETER TO THE instancestatus TABLE
-method _addInstanceStatus ( $data ) {
+#### ADD A PARAMETER TO THE instance TABLE
+method _addInstance ( $data ) {
  	$self->logDebug("data", $data);
 
 	#### SET TABLE AND REQUIRED FIELDS	
-	my $table = "instancestatus";
+	my $table = "instance";
 	my $required_fields = ["username", "projectname", "workflowname" ];
 	my $fields = $self->db()->fields( $table );
 
@@ -88,11 +88,11 @@ method _addInstanceStatus ( $data ) {
 	return $self->_addToTable( $table, $data, $required_fields, $fields );	
 }
 
-method _removeInstanceStatus ( $data ) {
+method _removeInstance ( $data ) {
  	$self->logDebug("data", $data);	
 	
 	#### SET TABLE AND REQUIRED FIELDS	
-	my $table = "instancestatus";
+	my $table = "instance";
 	my $required_fields = ["username", "projectname", "workflowname" ];
 
 	#### CHECK REQUIRED FIELDS ARE DEFINED

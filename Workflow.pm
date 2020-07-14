@@ -12,34 +12,45 @@ use Method::Signatures::Simple;
   
 =cut
 
-method setWorkflowStatus ($username, $projectname, $workflowname, $status) {
-  $self->logDebug("workflowname", $workflowname);
+method setWorkflowStatus ( $data, $status ) {
+  $self->logDebug( "data", $data, 1 );
+  $self->logDebug( "status", $status );
 
-  my $data  =  {
-    username      =>  $username,
-    projectname    =>  $projectname,
-    workflowname  =>  $workflowname
-  };
-  
   #### CHECK REQUIRED FIELDS
   my $table = "workflow";
   my $required_fields = ["username", "projectname", "workflowname"];
   my $not_defined = $self->db()->notDefined($data, $required_fields);
-    $self->logError("undefined values: @$not_defined") and exit if @$not_defined;
+  if ( @$not_defined ) {
+    $self->logCritical( "undefined values: @$not_defined");
+    return 0;
+  }
 
-  #### UPDATE
-  my $query  =  qq{UPDATE workflow
-SET status='$status'
-WHERE username='$username'
-AND projectname='$projectname'
-AND workflowname='$workflowname'};
-  $self->logDebug("query", $query);
-  my $success = $self->db()->do($query);  
-  $self->logDebug("success", $success);
-  
-  return $success;  
+  my $query = qq{UPDATE workflow
+  SET status = '$status'
+  WHERE username = '$data->{ username }'
+  AND projectname = '$data->{ projectname }'
+  AND workflowname = '$data->{ workflowname }'};
+
+  my $success = $self->db()->do($query);
+  if ( not $success ) {
+    $self->logCritical( "Can't update 'workflow' table entry (project '$data->{ projectname }' workflow 
+      '$data->{ workflowname }' with status: $status. data", $data );
+    return 0;
+  }
+
+  $query = qq{UPDATE project
+SET status = '$status'
+WHERE username = '$data->{ username }'
+AND projectname = '$data->{ projectname }'};
+
+  $success = $self->db()->do($query);
+  if ( not $success ) {
+    $self->logCritical( "Can't update 'project' table entry: $data->{ projectname } with status: $status" );
+    return 0;
+  }
+
+  return 1;    
 }
-
 
 method isWorkflow ($username, $projectname, $workflowname) {
   #$self->logDebug("username", $username);
@@ -131,14 +142,15 @@ ORDER BY workflownumber};
   return $workflows;
 }
 
-method addWorkflow {
-  my $data     =  $self->json();
-   $self->logDebug("data", $data);
+method addWorkflow ( $data ) {
+  # $self->logDebug("data", $data);
 
-  my $success = $self->_addWorkflow($data);
-   return if not defined $success;
-  $self->logError("Could not add workflow $data->{workflow} into project $data->{projectname} in workflow table") and exit if not defined $success;
-  $self->logStatus("Added workflow $data->{name} to project $data->{projectname}");
+  my $success = $self->_removeWorkflow($data);
+  return 0 if not $success;
+
+  $success = $self->_addWorkflow($data);
+
+  return 0 if not $success;
 }
 
 method _addWorkflow ($data) {

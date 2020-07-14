@@ -34,7 +34,7 @@ class Table::Main with (Util::Logger,
   Table::Stage,
   Table::Workflow,
   Table::Job,
-  Table::InstanceStatus) {
+  Table::Instance) {
 
 #### EXTERNAL
 use Data::Dumper;
@@ -93,7 +93,7 @@ method initialise ($args) {
 method setDbh ( $args ) {
   $self->logCaller("");
   # $self->logNote("args", $args);  
-  $self->logDebug( "self->log()", $self->log() );
+  $self->logNote( "self->log()", $self->log() );
 
   my $database    = $args->{database} || $self->database();
   my $dbuser      = $args->{dbuser};
@@ -168,8 +168,9 @@ method setDbh ( $args ) {
       printlog    =>  $printlog,
       parent      =>  $self
     }
-  ) or print qq{ error: 'Agua::Database::setDbh    Cannot create database object $database: $!' } and return;
-  $self->logDebug( "db", $db );
+  ) or print qq{ error: 'Agua::Database::setDbh    Cannot create database object '$database': $!' } and return;
+
+  $self->logNote( "db", $db );
   $self->logError("db not defined") and return if not defined $db;
 
   $self->db($db); 
@@ -296,9 +297,14 @@ method _addToTable ( $table, $hash, $required_fields, $inserted_fields ) {
         
 =cut
   #### CHECK FOR ERRORS
-    $self->logError("hash not defined for table: $table") and return if not defined $hash;
-    $self->logError("required_fields not defined for table: $table") and return if not defined $required_fields;
-    $self->logError("table not defined") and return if not defined $table;
+
+  $self->logDebug( "table", $table );
+  $self->logDebug( "hash", $hash );
+
+  
+  $self->logError("hash not defined for table: $table") and return if not defined $hash;
+  $self->logError("required_fields not defined for table: $table") and return if not defined $required_fields;
+  $self->logError("table not defined") and return if not defined $table;
   
   #### CHECK REQUIRED FIELDS ARE DEFINED
   my $not_defined = $self->db()->notDefined($hash, $required_fields);

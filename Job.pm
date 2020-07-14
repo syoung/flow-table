@@ -39,28 +39,24 @@ use Method::Signatures::Simple;
 
 =cut
 
-method updateJobs ( $data ) {  
-  $self->logDebug( "data", $data, 1 );
+method updateJob ( $hash, $set_hash ) {  
+  $self->logDebug( "hash", $hash, 1 );
+  $self->logDebug( "set_hash", $set_hash );
+  my $set_fields;
+  @$set_fields = keys %$set_hash;
+  $self->logDebug( "set_fields", $set_fields );
+  
+  #### SET TABLE AND REQUIRED FIELDS  
+  my $table = "job";
+  my $required_fields = [ "username", "projectname", "workflowname" ];
 
-  my $query = qq{UPDATE job
-SET
-processid = '$data->{ processid }',
-first='$data->{ first }',
-last='$data->{ last }',
-current='$data->{ appnumber }'
-WHERE username = '$data->{ username }'
-AND projectname = '$data->{ projectname }'
-AND workflowname = '$data->{ workflowname }'};
+  #### CHECK REQUIRED FIELDS ARE DEFINED
+  my $not_defined = $self->db()->notDefined( $hash, $required_fields);
+    $self->logCritical( "undefined values: @$not_defined" ) and return 0 if @$not_defined;
+  
+  my $success = $self->_updateTable( $table, $hash, $required_fields, $set_hash, $set_fields );
 
-  $self->logNote("$query");
-  my $success = $self->db()->do($query);
-  if ( not $success ) {
-    $self->logError("Can't update project '$data->{ projectname }' workflow '$data->{ workflowname }' with processid: $data->{ processid }");
-    
-    return 0;
-  }
- 
- 	return 1;
+  return $success;
 }
 
 method getJobs {
@@ -84,26 +80,6 @@ WHERE username='$username'};
 	return $jobs;
 }
 
-# method getJobByWorkflow ( $data ) {
-# =head2
-
-# 	GET job TABLE ENTRY FOR WORKFLOW
-
-# =cut
-
-# 	my $query = qq{SELECT * FROM job
-# WHERE username='$data->{ username }'
-# AND projectname='$data->{ projectname }'
-# AND workflowname='$data->{ workflowname}'};
-# 	$self->logDebug("query", $query);
-
-# 	my $job = $self->db()->queryhash( $query );
-# 	$self->logDebug( "job", $job );
-
-# 	return $job;
-# }
-
-
 method getJobByWorkflow ( $data ) {
 	$self->logNote("$$ data", $data);
 
@@ -112,20 +88,26 @@ method getJobByWorkflow ( $data ) {
 	my $query = qq{SELECT * FROM job
 $where
 ORDER BY projectname, workflownumber};
-	$self->logNote("$$ $query");
+	$self->logDebug( "query", $query );
 
-	my $jobs = $self->db()->queryhasharray($query);
-	$jobs = [] if not defined $jobs;
-	#$self->logDebug("$$ jobs", $jobs);
-	$self->logDebug("Total jobs", scalar(@$jobs));
+	my $job = $self->db()->queryhash($query);
 	
-	return $jobs;
+	return $job;
 }
 
 #### ADD A PARAMETER TO THE job TABLE
 method addJob ( $data ) {
+	$self->logDebug( "data", $data );
 
+	my $success = $self->_removeJob( $data );
+	$self->logDebug( "success", $success );
+
+	$success = $self->_addJob( $data );
+	$self->logDebug( "success", $success );
+
+	return $success;
 }
+
 method _addJob ( $data ) {
  	$self->logDebug("data", $data);
 

@@ -290,11 +290,12 @@ $where};
 =cut 
 
 method notDefined ($hash, $fields) {
+  # $self->logDebug( "hash", $hash );
   return [] if not defined $hash or not defined $fields or not @$fields;
   
   my $notDefined = [];
-    for ( my $i = 0; $i < @$fields; $i++ ) {
-        push( @$notDefined, $$fields[$i]) if not defined $$hash{$$fields[$i]};
+  for ( my $i = 0; $i < @$fields; $i++ ) {
+      push( @$notDefined, $$fields[$i]) if not defined $$hash{$$fields[$i]};
     }
 
     return $notDefined;

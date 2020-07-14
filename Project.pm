@@ -12,6 +12,30 @@ use Method::Signatures::Simple;
     
 =cut
 
+method updateProject ( $data ) {  
+  $self->logDebug( "data", $data, 1 );
+
+  my $query = qq{UPDATE project
+SET
+processid = '$data->{ processid }',
+first='$data->{ first }',
+last='$data->{ last }',
+current='$data->{ appnumber }'
+WHERE username = '$data->{ username }'
+AND projectname = '$data->{ projectname }'
+AND workflowname = '$data->{ workflowname }'};
+
+  $self->logNote("$query");
+  my $success = $self->db()->do($query);
+  if ( not $success ) {
+    $self->logError("Can't update project '$data->{ projectname }' workflow '$data->{ workflowname }' with processid: $data->{ processid }");
+    
+    return 0;
+  }
+ 
+  return 1;
+}
+
 method isProject ( $username, $projectname ) {
     $self->logDebug("username", $username);
     $self->logDebug("projectname", $projectname);
@@ -77,7 +101,7 @@ method saveProject {
   $self->logStatus("Successful insert of project $json->{project} into project table") if $success;
 }
 
-method addProject {
+method addProject ( $data ) {
 =head2
 
   SUBROUTINE    addProject
@@ -88,15 +112,12 @@ method addProject {
         
 =cut
 
-  my $data     =  $self->json();
-
-   $self->logDebug("Common::addProject()");
-
   #### REMOVE IF EXISTS ALREADY
   $self->_removeProject($data);
 
   my $success = $self->_addProject($data);  
-  $self->logStatus("Created/updated project $data->{name}") if $success;
+
+  return $success;
 }
 
 method _addProject ($data) {
@@ -336,7 +357,7 @@ WHERE status='running'
 };
   $self->logNote("query", $query);
   my $result =  $self->db()->queryhasharray( $query );
-  $self->logDebug("Returning result", $result);
+  $self->logNote("Returning result", $result);
   
   return $result
 }

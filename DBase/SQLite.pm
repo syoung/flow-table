@@ -39,7 +39,7 @@ method BUILD ($hash) {
 method initialise ($hash) {
     #### CONNECT TO DATABASE
     my $dbfile    =    $self->dbfile();
-    $self->logDebug("dbfile", $dbfile);  
+    $self->logNote("dbfile", $dbfile);  
     die "SQLite database file not defined"if not defined $dbfile;
 
     my $dbh = DBI->connect(
