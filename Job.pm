@@ -39,8 +39,8 @@ use Method::Signatures::Simple;
 
 =cut
 
-method updateJob ( $hash, $set_hash ) {  
-  $self->logDebug( "hash", $hash, 1 );
+method updateJob ( $data, $set_hash ) {  
+  # $self->logDebug( "data", $data, 1 );
   $self->logDebug( "set_hash", $set_hash );
   my $set_fields;
   @$set_fields = keys %$set_hash;
@@ -51,13 +51,36 @@ method updateJob ( $hash, $set_hash ) {
   my $required_fields = [ "username", "projectname", "workflowname" ];
 
   #### CHECK REQUIRED FIELDS ARE DEFINED
-  my $not_defined = $self->db()->notDefined( $hash, $required_fields);
+  my $not_defined = $self->db()->notDefined( $data, $required_fields);
     $self->logCritical( "undefined values: @$not_defined" ) and return 0 if @$not_defined;
   
-  my $success = $self->_updateTable( $table, $hash, $required_fields, $set_hash, $set_fields );
+  my $success = $self->_updateTable( $table, $data, $required_fields, $set_hash, $set_fields );
 
   return $success;
 }
+
+method hasJob ( $data ) {
+
+#### SET TABLE AND REQUIRED FIELDS  
+  my $table = "job";
+  my $required_fields = [ "username", "projectname", "workflowname" ];
+
+  #### CHECK REQUIRED FIELDS ARE DEFINED
+  my $not_defined = $self->db()->notDefined( $data, $required_fields);
+    $self->logCritical( "undefined values: @$not_defined" ) and return 0 if @$not_defined;
+  
+  my $query = "SELECT 1 FROM job 
+WHERE username='$data->{ username }'
+AND projectname='$data->{ projectname }'
+AND workflowname='$data->{ workflowname }'";
+	$self->logDebug( "query", $query );
+	my $result = $self->db()->query( $query );
+
+	$result = 0 if not defined $result;
+
+	return $result;
+}
+
 
 method getJobs {
 =head2
@@ -66,18 +89,30 @@ method getJobs {
 
 =cut
 
-	#### SET OWNER 
-	my $username = $self->username();
-	#$self->logNote("$$ owner", $owner);
-
-	my $query = qq{SELECT * FROM job
-WHERE username='$username'};
+	my $query = qq{SELECT * FROM job};
 	$self->logDebug("query", $query);
 	my $jobs = $self->db()->queryhasharray($query);
 	$jobs = [] if not defined $jobs;
 	$self->logDebug("no. jobs", scalar(@$jobs));
 
 	return $jobs;
+}
+
+method getJobsByUser ( $username ) {
+=head2
+
+  GET ALL ENTRIES FROM job TABLE
+
+=cut
+
+  my $query = qq{SELECT * FROM job
+WHERE username='$username'};
+  $self->logDebug("query", $query);
+  my $jobs = $self->db()->queryhasharray($query);
+  $jobs = [] if not defined $jobs;
+  $self->logDebug("no. jobs", scalar(@$jobs));
+
+  return $jobs;
 }
 
 method getJobByWorkflow ( $data ) {
@@ -97,19 +132,19 @@ ORDER BY projectname, workflownumber};
 
 #### ADD A PARAMETER TO THE job TABLE
 method addJob ( $data ) {
-	$self->logDebug( "data", $data );
+	$self->logNote( "data", $data );
 
 	my $success = $self->_removeJob( $data );
-	$self->logDebug( "success", $success );
+	$self->logDebug( "_removeJob success", $success );
 
 	$success = $self->_addJob( $data );
-	$self->logDebug( "success", $success );
+	$self->logDebug( "_addJob success", $success );
 
 	return $success;
 }
 
 method _addJob ( $data ) {
- 	$self->logDebug("data", $data);
+ 	# $self->logDebug("data", $data);
 
 	#### SET TABLE AND REQUIRED FIELDS	
 	my $table = "job";
@@ -121,12 +156,11 @@ method _addJob ( $data ) {
   $self->logError("undefined values: @$not_defined") and return if @$not_defined;
 
 	#### ADD ALL fields IN data TO TABLE
- 	$self->logDebug("Doing addToTable(table, data, required_fields)");
 	return $self->_addToTable( $table, $data, $required_fields, $fields );	
 }
 
 method _removeJob ( $data ) {
- 	$self->logDebug("data", $data);	
+ 	# $self->logDebug("data", $data);	
 	
 	#### SET TABLE AND REQUIRED FIELDS	
 	my $table = "job";
@@ -137,7 +171,6 @@ method _removeJob ( $data ) {
   $self->logError("undefined values: @$not_defined") and return if @$not_defined;
 
 	#### REMOVE FROM TABLE
- 	$self->logDebug("Doing _removeFromTable(table, data, required_fields)");
 	return $self->_removeFromTable($table, $data, $required_fields);
 }
 

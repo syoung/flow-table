@@ -298,8 +298,8 @@ method _addToTable ( $table, $hash, $required_fields, $inserted_fields ) {
 =cut
   #### CHECK FOR ERRORS
 
-  $self->logDebug( "table", $table );
-  $self->logDebug( "hash", $hash );
+  $self->logNote( "table", $table );
+  $self->logNote( "hash", $hash );
 
   
   $self->logError("hash not defined for table: $table") and return if not defined $hash;

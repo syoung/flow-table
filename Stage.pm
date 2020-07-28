@@ -68,9 +68,9 @@ AND appnumber = '$appnumber'};
   $self->logDebug( "last", $last );
   if ( $status eq "error"
     or $status eq "running" 
+    or $status eq "stopped"
     or ( ( $status eq "completed" ) and $current == $last ) ) {
 
-    
     $self->setWorkflowStatus( $data, $status );
   }
 }
@@ -78,7 +78,7 @@ AND appnumber = '$appnumber'};
 method setStageQueued ( $data, $time ) {
   $self->logDebug( "time", $time );
   my $set = qq{
-queued    =   $time,
+queued    =   '$time',
 started   =   '',
 completed =   ''};
   $self->setFields( $data, $set );
@@ -89,7 +89,7 @@ completed =   ''};
 method setStageRunning ( $data, $time ) {
   $self->logDebug( "time", $time );
   my $set = qq{
-started   =   $time,
+started   =   '$time',
 completed =   ''};
   $self->setFields( $data, $set );
 
@@ -99,16 +99,25 @@ completed =   ''};
 method setStageCompleted ( $data, $time ) {
   $self->logDebug( "time", $time );
   my $set = qq{
-completed =   $time};
+completed =   '$time'};
   $self->setFields( $data, $set );
 
   $self->setStageStatus( $data, "completed" );
 }
 
+method setStageStopped ( $data, $time ) {
+  $self->logDebug( "time", $time );
+  my $set = qq{
+completed =   '$time'};
+  $self->setFields( $data, $set );
+
+  $self->setStageStatus( $data, "stopped" );
+}
+
 method setStageError ( $data, $time ) {
   $self->logDebug( "time", $time );
   my $set = qq{
-completed =   $time};
+completed =   '$time'};
   $self->setFields( $data, $set );
 
   $self->setStageStatus( $data, "error" );
@@ -171,17 +180,18 @@ $where};
 }
 
 method isStage ( $data ) {
-	$self->logDebug( "data", $data );
-
-	my $required = [ "username", "projectname", "workflowname", "appname", "appnumber" ];
+	# $self->logDebug( "data", $data );
+  $data->{ appnumber } = $data->{ current };
+  
+	my $required = [ "username", "projectname", "workflowname", "appnumber" ];
 	my $where = $self->db()->where($data, $required);
 	my $query = qq{SELECT 1 FROM stage
 $where};
-	$self->logDebug( "query", $query );
+	# $self->logDebug( "query", $query );
 
-	my $success = $self->db()->queryhasharray($query);
+	my $success = $self->db()->query($query);
 	$self->logDebug( "success", $success );
-	$success = 0 if not $success == 1;
+	$success = 0 if not defined $success;
 
 	return $success; 
 }
@@ -213,6 +223,20 @@ WHERE username='$username'\n};
 	#$self->logNote("stages", $stages);
 
 	return $stages;
+}
+
+method getStageByJob ( $data ) {
+	$self->logNote("data", $data);
+	$data->{ appnumber } = $data->{ current } if defined $data->{ current };
+
+	my $required = [ "username", "projectname", "workflowname", "appnumber" ];
+	my $where = $self->db()->where($data, $required);
+	my $query = qq{SELECT * FROM stage
+$where};
+	$query .= qq{ORDER BY projectname, workflowname, appnumber};
+	$self->logNote("$query");
+
+	return $self->db()->queryhash($query);
 }
 
 method getStagesByWorkflow ( $data ) {
@@ -526,7 +550,7 @@ method _addStage ( $data ) {
 	
 	#### SET TABLE AND REQUIRED FIELDS	
 	my $table = "stage";
-	my $required_fields = ["username", "projectname", "workflowname", "workflownumber", "appname", "appnumber", "apptype"];
+	my $required_fields = ["username", "projectname", "workflowname", "workflownumber", "appname", "appnumber" ];
 	
 	my $inserted_fields = $self->db()->fields($table);
 
@@ -648,7 +672,7 @@ method _removeStage ( $data ) {
 	#### CHECK UNIQUE FIELDS ARE DEFINED
 	#### NB: ALSO CHECK name THOUGH NOT NECCESSARY FOR UNIQUE ID
 	#### NNB: type IS NEEDED TO IDENTIFY IF ITS A REPORT
-	my $required_fields = ["username", "projectname", "workflowname", "appnumber", "appname", "apptype"];
+	my $required_fields = ["username", "projectname", "workflowname", "appnumber", "appname" ];
 	my $not_defined = $self->db()->notDefined($data, $required_fields);
     $self->logError("undefined values: @$not_defined") and exit if @$not_defined;
 	

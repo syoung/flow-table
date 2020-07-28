@@ -13,7 +13,7 @@ use Method::Signatures::Simple;
 =cut
 
 method setWorkflowStatus ( $data, $status ) {
-  $self->logDebug( "data", $data, 1 );
+  # $self->logDebug( "data", $data, 1 );
   $self->logDebug( "status", $status );
 
   #### CHECK REQUIRED FIELDS
